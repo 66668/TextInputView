@@ -7,9 +7,9 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <!--支持的尺寸是120*140,其他尺寸请自己到源码中设置-->
-    <com.sjy.inputdemo.TextInputView
-        android:id="@+id/textInputView"
+    <!--支持的尺寸是,其他尺寸请自己到源码中设置-->
+    <com.sjy.inputdemo.system_wdget.TextInputView2
+        android:id="@+id/textInputView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="80px"
@@ -22,16 +22,35 @@
         app:inputNumber="6"
         app:inputSize="36px"
         app:inputType="number"
-        app:inputWidth="120px"/>
-    <TextView
-        android:text="模拟嵌入式的硬键盘输入"
+        app:inputWidth="120px" />
+
+
+    <com.sjy.inputdemo.embed.TextInputView
+        android:id="@+id/textInputView1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80px"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:inputBackground="@drawable/input_bg_style"
+        app:inputColor="#FFF"
+        app:inputHeight="140px"
+        app:inputNumber="6"
+        app:inputSize="36px"
+        app:inputType="number"
+        app:inputWidth="120px" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="模拟嵌入式的硬键盘输入" />
+
     <EditText
         android:id="@+id/et_input"
         android:layout_width="250dp"
+        android:layout_height="50dp"
         android:gravity="center"
-        android:hint="请输入数字0-9查看效果"
-        android:layout_height="50dp" />
+        android:hint="请输入数字0-9查看效果" />
 
 </LinearLayout>

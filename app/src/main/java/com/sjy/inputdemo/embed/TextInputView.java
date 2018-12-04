@@ -1,33 +1,30 @@
-package com.sjy.inputdemo;
+package com.sjy.inputdemo.embed;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.lang.reflect.Field;
+import com.sjy.inputdemo.R;
+
 
 
 /**
- *
- * sjy 2018-0821
+ * 验证码 嵌入式版：封装的是TextView，避免调起手机的输入法，从而可以使用别的外键输入内容。
+ * sjy 2018-1204
  */
 
-public class TextInputView extends LinearLayout implements TextWatcher, View.OnKeyListener, View.OnFocusChangeListener {
+public class TextInputView extends LinearLayout implements TextWatcher {
 
     private Context mContext;
     private OnInputFinishListener onCodeFinishListener;
@@ -38,6 +35,8 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
      * 输入框数量
      */
     private int inputNumber;
+
+    private int defaultInputNumber = 6;
 
     /**
      * 输入框类型
@@ -50,9 +49,19 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
     private int inputWidth;
 
     /**
+     * 默认尺寸
+     */
+    private int defaultInputWidth = 88;
+
+    /**
      * 输入框的宽度
      */
     private int inputHeight;
+
+    /**
+     * 默认尺寸
+     */
+    private int defaultInputHeight = 104;
 
     /**
      * 文字颜色
@@ -63,17 +72,13 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
      * 文字大小
      */
     private float inputTextSize;
+    private int defaultInputTextSize = 22;
 
     /**
      * 输入框背景
      */
     private int inputBackground;
 
-
-    /**
-     * 光标颜色
-     */
-    private int inputCursor;
 
 
     /**
@@ -94,15 +99,14 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
         super(context, attrs);
         this.mContext = context;
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.textInputViewStyle);//获取自定义样式
-        inputNumber = typedArray.getInteger(R.styleable.textInputViewStyle_inputNumber, 4);
+        inputNumber = typedArray.getInteger(R.styleable.textInputViewStyle_inputNumber, defaultInputNumber);
         int mInputType = typedArray.getInt(R.styleable.textInputViewStyle_inputType, VCInputType.NUMBER.ordinal());
         this.inputType = VCInputType.values()[mInputType];
-        inputWidth = typedArray.getDimensionPixelSize(R.styleable.textInputViewStyle_inputWidth, 92);
-        inputHeight = typedArray.getDimensionPixelSize(R.styleable.textInputViewStyle_inputHeight, 120);
+        inputWidth = typedArray.getDimensionPixelSize(R.styleable.textInputViewStyle_inputWidth, defaultInputWidth);
+        inputHeight = typedArray.getDimensionPixelSize(R.styleable.textInputViewStyle_inputHeight, defaultInputHeight);
         inputTextColor = typedArray.getColor(R.styleable.textInputViewStyle_inputColor, Color.YELLOW);
-        inputTextSize = typedArray.getDimensionPixelSize(R.styleable.textInputViewStyle_inputSize, 24);
-        inputBackground = typedArray.getResourceId(R.styleable.textInputViewStyle_inputBackground, R.drawable.input_cursor_style);
-        inputCursor = typedArray.getResourceId(R.styleable.textInputViewStyle_inputCursor, R.drawable.input_cursor_style);
+        inputTextSize = typedArray.getDimensionPixelSize(R.styleable.textInputViewStyle_inputSize, defaultInputTextSize);
+        inputBackground = typedArray.getResourceId(R.styleable.textInputViewStyle_inputBackground, R.drawable.input_bg_style);
 
         //释放资源
         typedArray.recycle();
@@ -123,29 +127,29 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
     }
 
     /**
-     * 创建布局2，该布局是EditText输入框
+     * 创建布局2，该布局是TextView输入框
      */
     private void initLayout() {
         layout2.setOrientation(HORIZONTAL);
         for (int i = 0; i < inputNumber; i++) {
-            EditText editText = new EditText(mContext);
-            initEditText(editText, i);
-            layout2.addView(editText);
+            TextView textView = new TextView(mContext);
+            initTextView(textView, i);
+            layout2.addView(textView);
 
-            if (i == 0) { //设置第一个editText获取焦点
-                editText.setFocusable(true);
+            if (i == 0) { //设置第一个textView获取焦点
+                textView.setFocusable(true);
             }
         }
         addView(layout2);
     }
 
     /**
-     * 第i个EditText设置
+     * 第i个TextView设置
      *
-     * @param editText
+     * @param textView
      * @param i
      */
-    private void initEditText(EditText editText, int i) {
+    private void initTextView(TextView textView, int i) {
         int marginWidth = 20;
         LayoutParams layoutParams = new LayoutParams(inputWidth, inputHeight);
 
@@ -161,47 +165,36 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
 
         layoutParams.gravity = Gravity.CENTER;
 
-        editText.setLayoutParams(layoutParams);
-        editText.setGravity(Gravity.CENTER);
-        editText.setId(i);
-        editText.setCursorVisible(true);
-        editText.setMaxEms(1);
-        editText.setTextColor(inputTextColor);
-        editText.setTextSize(inputTextSize);
-        editText.setMaxLines(1);
-        editText.setPadding(0, 0, 0, 0);
-        editText.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));//加粗
+        textView.setLayoutParams(layoutParams);
+        textView.setGravity(Gravity.CENTER);
+        textView.setId(i);
+        textView.setCursorVisible(true);
+        textView.setMaxEms(1);
+        textView.setTextColor(inputTextColor);
+        textView.setTextSize(inputTextSize);
+        textView.setMaxLines(1);
+        textView.setPadding(0, 0, 0, 0);
+        textView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));//加粗
         //设置过滤
-        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(1)});
+        textView.setFilters(new InputFilter[]{new InputFilter.LengthFilter(1)});
         switch (inputType) {
             case NUMBER:
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                textView.setInputType(InputType.TYPE_CLASS_NUMBER);
                 break;
             case NUMBERPASSWORD:
-                editText.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+                textView.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
                 break;
             case TEXT:
-                editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                textView.setInputType(InputType.TYPE_CLASS_TEXT);
                 break;
             case TEXTPASSWORD:
-                editText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                textView.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 break;
             default:
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                textView.setInputType(InputType.TYPE_CLASS_NUMBER);
         }
-        editText.setOnKeyListener(this);
-        editText.setBackgroundResource(inputBackground);
+        textView.setBackgroundResource(inputBackground);
 
-        //修改光标的颜色（反射）
-        try {
-            Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
-            f.setAccessible(true);
-            f.set(editText, inputCursor);
-        } catch (Exception ignored) {
-        }
-        editText.addTextChangedListener(this);
-        editText.setOnFocusChangeListener(this);
-        editText.setOnKeyListener(this);
     }
 
     //==============================override==============================
@@ -219,24 +212,10 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
     @Override
     public void afterTextChanged(Editable s) {
         if (s.length() != 0) {
-            focus();
+            focus1();
         }
     }
 
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        if (hasFocus) {
-            focus();
-        }
-    }
-
-    @Override
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_DEL) {
-            backFocus();
-        }
-        return false;
-    }
 
     /**
      * 处理layout2子控件相关
@@ -264,33 +243,33 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
      */
     private void focus() {
         int count = getChildCountOf2();
-        EditText editText;
+        TextView textView;
 
         //有值
         for (int i = 0; i < count; i++) {
             //
-            editText = getEditText(i);
+            textView = getTextView(i);
 
-            if (editText.getText().length() > 0) {//有值 变色
-                editText.setSelected(true);
+            if (textView.getText().length() > 0) {//有值 变色
+                textView.setSelected(true);
             }
-            if (editText.getText().length() < 1) {//正在编辑 变色
-                editText.setSelected(true);//setSelected（）在setCursorVisible（）上，不可以颠倒
-                editText.setCursorVisible(true);
-                editText.requestFocus();
+            if (textView.getText().length() < 1) {//正在编辑 变色
+                textView.setSelected(true);//setSelected（）在setCursorVisible（）上，不可以颠倒
+                textView.setCursorVisible(true);
+                textView.requestFocus();
                 return;
             }
         }
 
         //如果最后一个输入框有字符，则返回结果
-        EditText lastEditText = getEditText(inputNumber - 1);
+        TextView lastTextView = getTextView(inputNumber - 1);
 
-        if (lastEditText.getText().length() > 0) {
-            lastEditText.setCursorVisible(false);
-            lastEditText.setSelected(true);
+        if (lastTextView.getText().length() > 0) {
+            lastTextView.setCursorVisible(false);
+            lastTextView.setSelected(true);
             getResult();
         } else {
-            lastEditText.setSelected(false);
+            lastTextView.setSelected(false);
         }
     }
 
@@ -300,32 +279,32 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
      */
     private void focus1() {
         int count = getChildCountOf2();
-        EditText editText;
+        TextView textView;
         //有值
         for (int i = 0; i < count; i++) {
             //
-            editText = getEditText(i);
+            textView = getTextView(i);
 
-            if (editText.getText().length() > 0) {//有值 变色
-                editText.setSelected(true);
+            if (textView.getText().length() > 0) {//有值 变色
+                textView.setSelected(true);
             }
-            if (editText.getText().length() < 1) {//正在编辑 变色
-                editText.setSelected(true);//setSelected（）在setCursorVisible（）上，不可以颠倒
-                editText.setCursorVisible(true);
-                editText.requestFocus();
+            if (textView.getText().length() < 1) {//正在编辑 变色
+                textView.setSelected(true);//setSelected（）在setCursorVisible（）上，不可以颠倒
+                textView.setCursorVisible(true);
+                textView.requestFocus();
                 return;
             }
         }
 
         //如果最后一个输入框有字符，则返回结果
-        EditText lastEditText = getEditText(inputNumber - 1);
+        TextView lastTextView = getTextView(inputNumber - 1);
 
-        if (lastEditText.getText().length() > 0) {
-            lastEditText.setCursorVisible(false);
-            lastEditText.setSelected(true);
+        if (lastTextView.getText().length() > 0) {
+            lastTextView.setCursorVisible(false);
+            lastTextView.setSelected(true);
             getResult();
         } else {
-            lastEditText.setSelected(false);
+            lastTextView.setSelected(false);
         }
     }
 
@@ -335,19 +314,19 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
     private void backFocus() {
 
         long startTime = System.currentTimeMillis();
-        EditText editText;
-        //循环检测有字符的`editText`，把其置空，并获取焦点。
+        TextView textView;
+        //循环检测有字符的`textView`，把其置空，并获取焦点。
         for (int i = inputNumber - 1; i >= 0; i--) {
-            editText = getEditText(i);
-            if (editText.getText().length() >= 1 && startTime - endTime > 100) {
-                editText.setText("");
-                editText.setCursorVisible(true);
-                editText.requestFocus();
+            textView = getTextView(i);
+            if (textView.getText().length() >= 1 && startTime - endTime > 100) {
+                textView.setText("");
+                textView.setCursorVisible(true);
+                textView.requestFocus();
                 if (i == inputNumber - 1) {
-                    getEditText(i).setSelected(true);
+                    getTextView(i).setSelected(true);
                 } else {
-                    getEditText(i).setSelected(true);
-                    getEditText(i + 1).setSelected(false);
+                    getTextView(i).setSelected(true);
+                    getTextView(i + 1).setSelected(false);
                 }
                 endTime = startTime;
                 return;
@@ -361,11 +340,11 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
      */
     private void getResult() {
         StringBuffer stringBuffer = new StringBuffer();
-        EditText editText;
+        TextView textView;
 
         for (int i = 0; i < inputNumber; i++) {
-            editText = getEditText(i);
-            stringBuffer.append(editText.getText());
+            textView = getTextView(i);
+            stringBuffer.append(textView.getText());
 
         }
 
@@ -377,12 +356,12 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
     //==============================layout2相关==============================
 
     /**
-     * 获取layout2子控件EditText
+     * 获取layout2子控件TextView
      *
      * @return
      */
-    private EditText getEditText(int position) {
-        return (EditText) ((LinearLayout) getChildAt(0)).getChildAt(position);
+    private TextView getTextView(int position) {
+        return (TextView) ((LinearLayout) getChildAt(0)).getChildAt(position);
 
     }
 
@@ -431,28 +410,28 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
         int lenght = string.length();
         char[] array = string.toString().toCharArray();
         if (lenght >= inputNumber) {
-            EditText editText = null;
+            TextView textView = null;
             for (int i = 0; i < inputNumber; i++) {
-                editText = getEditText(i);
-                editText.setText(array[i] + "");
-                editText.setSelected(true);
+                textView = getTextView(i);
+                textView.setText(array[i] + "");
+                textView.setSelected(true);
             }
             //设置焦点
             focus1();
             return true;
         } else {//lenght < inputNumber
-            EditText editText = null;
+            TextView textView = null;
             //输入框变色
 
             for (int i = 0; i < inputNumber; i++) {
-                editText = getEditText(i);
+                textView = getTextView(i);
                 if (i < lenght) {
-                    editText.setText(array[i] + "");
-                    editText.setSelected(true);
+                    textView.setText(array[i] + "");
+                    textView.setSelected(true);
 
                 } else {
-                    editText.setText("");
-                    editText.setSelected(false);
+                    textView.setText("");
+                    textView.setSelected(false);
                 }
 
             }
@@ -470,11 +449,11 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
      */
 
     public String getText() {
-        EditText editText = null;
+        TextView textView = null;
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < inputNumber; i++) {
-            editText = getEditText(i);
-            builder.append(editText.getText().toString());
+            textView = getTextView(i);
+            builder.append(textView.getText().toString());
         }
         return builder.toString();
     }
@@ -557,15 +536,6 @@ public class TextInputView extends LinearLayout implements TextWatcher, View.OnK
 
     public TextInputView setInputBackground(int inputBackground) {
         this.inputBackground = inputBackground;
-        return this;
-    }
-
-    public int getInputCursor() {
-        return inputCursor;
-    }
-
-    public TextInputView setInputCursor(int inputCursor) {
-        this.inputCursor = inputCursor;
         return this;
     }
 
