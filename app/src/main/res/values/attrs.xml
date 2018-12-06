@@ -32,4 +32,9 @@
         <!--光标样式-->
         <attr name="inputCursor" format="reference" />
     </declare-styleable>
+
+    <declare-styleable name="BorderTextView">
+        <attr name="type"/>
+        <attr name="borderColor" format="color"/>
+    </declare-styleable>
 </resources>
